@@ -18,7 +18,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    id: string;
+    id?: string;
     token: string;
   }
 }
@@ -44,23 +44,26 @@ export const authConfig = {
 
         try {
           // Call backend login API
-          const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
+          const response = await fetch(
+            `${env.NEXT_PUBLIC_API_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+              }),
             },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
+          );
 
           if (!response.ok) {
             return null;
           }
 
           const data = await response.json();
-          
+
           if (data.success && data.data) {
             return {
               id: data.data.user.id,

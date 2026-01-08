@@ -7,11 +7,12 @@
     "build": "tsc && tsc-alias",
     "start:prod": "cross-env NODE_ENV=production node -r tsconfig-paths/register dist/server.js",
     "start:stage": "cross-env NODE_ENV=stage node -r tsconfig-paths/register dist/server.js",
-    "dev": "cross-env NODE_ENV=development NODE_OPTIONS=--max-old-space-size=4096 nodemon",
+    "dev": " nodemon",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prod": "pnpm build && pnpm start"
+    "prod": "pnpm build && pnpm start",
+    "start": "node -r tsconfig-paths/register dist/server.js"
   },
   "keywords": [
     "task",
