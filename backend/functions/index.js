@@ -13,7 +13,10 @@ let dbConnected = false;
 const ensureDb = async () => {
   if (dbConnected) return;
   try {
-    if (connectDbModule && typeof connectDbModule.connectDatabase === "function") {
+    if (
+      connectDbModule &&
+      typeof connectDbModule.connectDatabase === "function"
+    ) {
       await connectDbModule.connectDatabase();
       dbConnected = true;
       console.log("✅ MongoDB connected (function cold start)");
