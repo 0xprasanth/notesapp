@@ -67,7 +67,17 @@ notesapp/
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── nodemon.json
-└── frontend/                             # Frontend directory (to be implemented)
+└── frontend/                             # Frontend directory
+  ├── src/
+  │   ├── app/                         # Next.js app (app router)
+  │   ├── components/                  # UI components
+  │   ├── services/                    # API service wrappers
+  │   ├── store/                       # Zustand stores
+  │   ├── styles/                      # Tailwind CSS / global styles
+  │   └── public/                       # Static assets
+  ├── package.json
+  ├── tsconfig.json
+  └── next.config.js
 ```
 
 ## 📋 Prerequisites
@@ -90,6 +100,12 @@ notesapp/
    cd backend
    pnpm install
    ```
+
+  Frontend dependencies (from project root):
+  ```bash
+  cd frontend
+  pnpm install
+  ```
 
 3. **Set up environment variables**
    
@@ -118,6 +134,12 @@ notesapp/
    # Frontend URL (for email links)
    FRONTEND_URL=http://localhost:3000
    ```
+
+  Frontend environment (create `.env` in `frontend/`):
+  ```env
+  NEXT_PUBLIC_API_URL=http://localhost:3001/api
+  # Add other frontend-specific variables as needed (e.g. analytics)
+  ```
 
 4. **Start MongoDB**
    
