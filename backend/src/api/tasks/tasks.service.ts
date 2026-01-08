@@ -1,12 +1,14 @@
-import Task, { ITask } from '@/models/Task';
-import Reminder, { ReminderStatus } from '@/models/Reminder';
-import { AppError } from '@/middlewares/errorHandler';
-import mongoose from 'mongoose';
+import Task, { ITask } from "@/models/Task";
+import Reminder, { ReminderStatus } from "@/models/Reminder";
+import { AppError } from "@/middlewares/errorHandler";
+import mongoose from "mongoose";
+import { tasksRoutes } from "..";
 
 interface CreateTaskData {
   title: string;
   description?: string;
   deadline: Date;
+  reminderMinutes?: number;
 }
 
 interface UpdateTaskData {
@@ -14,6 +16,7 @@ interface UpdateTaskData {
   description?: string;
   deadline?: Date;
   isCompleted?: boolean;
+  reminderMinutes?: number;
 }
 
 class TaskService {
@@ -22,12 +25,21 @@ class TaskService {
     const task = await Task.create({
       ...data,
       userId,
-      isCompleted: false
+      isCompleted: false,
     });
 
     // Create reminder (24 hours before deadline by default)
-    const reminderHours = parseInt(process.env.REMINDER_HOURS_BEFORE || '24');
-    const scheduledAt = new Date(task.deadline.getTime() - reminderHours * 60 * 60 * 1000);
+    // const reminderHours = task.reminderMinutes ? task.reminderMinutes : parseInt( process.env.REMINDER_HOURS_BEFORE);
+    // const scheduledAt = task.reminderMinutes ? new Date(
+    //   task.deadline.getTime() - reminderHours * 60 * 60 * 1000
+    // ) :  new Date(
+    //   task.deadline.getTime() - reminderHours * 60 * 60 * 1000
+    // );
+    const reminderOffsetMs = task.reminderMinutes
+      ? task.reminderMinutes * 60 * 1000 // minutes → ms
+      : Number(process.env.REMINDER_HOURS_BEFORE) * 60 * 60 * 1000; // hours → ms
+
+    const scheduledAt = new Date(task.deadline.getTime() - reminderOffsetMs);
 
     // Only create reminder if scheduled time is in the future
     if (scheduledAt > new Date()) {
@@ -35,14 +47,18 @@ class TaskService {
         taskId: task._id,
         userId,
         scheduledAt,
-        status: ReminderStatus.PENDING
+        status: ReminderStatus.PENDING,
+        reminderMinutes: task.reminderMinutes,
       });
     }
 
     return task;
   }
 
-  async getTasks(userId: string, filters?: { isCompleted?: boolean }): Promise<ITask[]> {
+  async getTasks(
+    userId: string,
+    filters?: { isCompleted?: boolean }
+  ): Promise<ITask[]> {
     const query: any = { userId };
 
     if (filters?.isCompleted !== undefined) {
@@ -54,27 +70,31 @@ class TaskService {
 
   async getTaskById(userId: string, taskId: string): Promise<ITask> {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
-      throw new AppError('Invalid task ID', 400);
+      throw new AppError("Invalid task ID", 400);
     }
 
     const task = await Task.findOne({ _id: taskId, userId });
 
     if (!task) {
-      throw new AppError('Task not found', 404);
+      throw new AppError("Task not found", 404);
     }
 
     return task;
   }
 
-  async updateTask(userId: string, taskId: string, data: UpdateTaskData): Promise<ITask> {
+  async updateTask(
+    userId: string,
+    taskId: string,
+    data: UpdateTaskData
+  ): Promise<ITask> {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
-      throw new AppError('Invalid task ID', 400);
+      throw new AppError("Invalid task ID", 400);
     }
 
     const task = await Task.findOne({ _id: taskId, userId });
 
     if (!task) {
-      throw new AppError('Task not found', 404);
+      throw new AppError("Task not found", 404);
     }
 
     // Update task fields
@@ -83,27 +103,38 @@ class TaskService {
     if (data.isCompleted !== undefined) task.isCompleted = data.isCompleted;
 
     // If deadline is updated, update reminder as well
-    if (data.deadline && data.deadline.toString() !== task.deadline.toString()) {
+    if (
+      data.deadline &&
+      data.deadline.toString() !== task.deadline.toString()
+    ) {
       task.deadline = data.deadline;
 
       // Delete old pending reminders
       await Reminder.deleteMany({
         taskId: task._id,
-        status: ReminderStatus.PENDING
+        status: ReminderStatus.PENDING,
       });
 
-      // Create new reminder
-      const reminderHours = parseInt(process.env.REMINDER_HOURS_BEFORE || '24');
-      const deadlineDate = new Date(data.deadline);
-      const scheduledAt = new Date(deadlineDate.getTime() - reminderHours * 60 * 60 * 1000);
+      // Create new reminder. Use minutes from data if provided; otherwise default to 60.
+      const reminderMinutes =
+        typeof data.reminderMinutes === "number"
+          ? data.reminderMinutes
+          : parseInt(process.env.REMINDER_MINUTES_BEFORE || "60");
 
-      if (scheduledAt > new Date() && !task.isCompleted) {
-        await Reminder.create({
-          taskId: task._id,
-          userId,
-          scheduledAt,
-          status: ReminderStatus.PENDING
-        });
+      if (reminderMinutes > 0) {
+        const deadlineDate = new Date(data.deadline);
+        const scheduledAt = new Date(
+          deadlineDate.getTime() - reminderMinutes * 60 * 1000
+        );
+
+        if (scheduledAt > new Date() && !task.isCompleted) {
+          await Reminder.create({
+            taskId: task._id,
+            userId,
+            scheduledAt,
+            status: ReminderStatus.PENDING,
+          });
+        }
       }
     }
 
@@ -113,13 +144,13 @@ class TaskService {
 
   async completeTask(userId: string, taskId: string): Promise<ITask> {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
-      throw new AppError('Invalid task ID', 400);
+      throw new AppError("Invalid task ID", 400);
     }
 
     const task = await Task.findOne({ _id: taskId, userId });
 
     if (!task) {
-      throw new AppError('Task not found', 404);
+      throw new AppError("Task not found", 404);
     }
 
     task.isCompleted = true;
@@ -128,7 +159,7 @@ class TaskService {
     // Delete pending reminders for completed tasks
     await Reminder.deleteMany({
       taskId: task._id,
-      status: ReminderStatus.PENDING
+      status: ReminderStatus.PENDING,
     });
 
     return task;
@@ -136,19 +167,19 @@ class TaskService {
 
   async deleteTask(userId: string, taskId: string): Promise<void> {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
-      throw new AppError('Invalid task ID', 400);
+      throw new AppError("Invalid task ID", 400);
     }
 
     const task = await Task.findOne({ _id: taskId, userId });
 
     if (!task) {
-      throw new AppError('Task not found', 404);
+      throw new AppError("Task not found", 404);
     }
 
     // Delete task and all associated reminders
     await Promise.all([
       Task.deleteOne({ _id: taskId }),
-      Reminder.deleteMany({ taskId })
+      Reminder.deleteMany({ taskId }),
     ]);
   }
 }

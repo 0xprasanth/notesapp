@@ -1,15 +1,17 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export enum ReminderStatus {
-  PENDING = 'pending',
-  SENT = 'sent',
-  FAILED = 'failed'
+  PENDING = "pending",
+  SENT = "sent",
+  FAILED = "failed",
 }
 
 export interface IReminder extends Document {
   taskId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   scheduledAt: Date;
+  reminderMinutes: number;
+
   status: ReminderStatus;
   errorMessage?: string;
   sentAt?: Date;
@@ -21,40 +23,50 @@ const reminderSchema = new Schema<IReminder>(
   {
     taskId: {
       type: Schema.Types.ObjectId,
-      ref: 'Task',
+      ref: "Task",
       required: true,
-      index: true
+      index: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
-      index: true
+      index: true,
     },
     scheduledAt: {
       type: Date,
       required: true,
-      index: true
+      index: true,
+    },
+    reminderMinutes: {
+      type: Number,
+      required: [true, "reminderMinutes is required"],
+      // validate: {
+      //   validator: function (value: Date) {
+      //     return value > new Date();
+      //   },
+      //   message: "reminderMinutes must be in the future",
+      // },
     },
     status: {
       type: String,
       enum: Object.values(ReminderStatus),
       default: ReminderStatus.PENDING,
-      index: true
+      index: true,
     },
     errorMessage: {
-      type: String
+      type: String,
     },
     sentAt: {
-      type: Date
-    }
+      type: Date,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
 // Compound index for finding pending reminders
 reminderSchema.index({ status: 1, scheduledAt: 1 });
 
-export default mongoose.model<IReminder>('Reminder', reminderSchema);
+export default mongoose.model<IReminder>("Reminder", reminderSchema);
