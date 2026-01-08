@@ -19,6 +19,7 @@ export interface CreateTaskPayload {
   title: string;
   description?: string;
   deadline: string; // ISO date string
+  reminderMinutes?: number; // optional minutes before deadline to create reminder
 }
 
 /**
@@ -29,6 +30,5 @@ export interface UpdateTaskPayload {
   description?: string;
   deadline?: string;
   isCompleted?: boolean;
+  reminderMinutes?: number;
 }
-
-
