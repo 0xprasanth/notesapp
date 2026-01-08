@@ -30,6 +30,14 @@ if (env.NODE_ENV === "development") {
   app.use(morgan("combined"));
 }
 
+// for renderer
+app.get("/", (req, res) => {
+  console.log(`Root Route`);
+  res.status(200).json({
+    success: true,
+    message: "Root Route",
+  });
+});
 // Health check endpoint - must be registered before other routes
 app.get("/api/health", (req, res) => {
   console.log(`Health check endpoint hit - ${req.method} ${req.originalUrl}`);
