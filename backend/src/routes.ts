@@ -12,12 +12,11 @@ interface RouteConfig {
 /**
  * API version prefix
  */
-const API_VERSION = "/api";
+const API_VERSION = process.env.API_URL ?? "/api";
 
 const routes: RouteConfig[] = [
   { path: "/auth", router: authRoutes },
   { path: "/tasks", router: tasksRoutes },
-
 ];
 /**
  * Register all routes with the Express application

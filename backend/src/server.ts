@@ -5,7 +5,7 @@ import { startReminderCron } from "@/jobs/reminderCron";
 
 const PORT = env.PORT || 3000;
 
-const startServer = async () => {
+export const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDatabase();
