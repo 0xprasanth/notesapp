@@ -1,4 +1,5 @@
 import { Router, Application } from "express";
+import { authRoutes, tasksRoutes } from "./api";
 
 /**
  * Route configuration interface
@@ -13,7 +14,11 @@ interface RouteConfig {
  */
 const API_VERSION = "/api";
 
-const routes: RouteConfig[] = [];
+const routes: RouteConfig[] = [
+  { path: "/auth", router: authRoutes },
+  { path: "/tasks", router: tasksRoutes },
+
+];
 /**
  * Register all routes with the Express application
  * @param app - Express application instance

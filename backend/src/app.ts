@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "@/config/env";
-import { errorHandler, notFound } from "@/middleware/errorHandler";
+import { errorHandler, notFound } from "@/middlewares/errorHandler";
 import { registerRoutes } from "@/routes";
 
 const app: express.Application = express();

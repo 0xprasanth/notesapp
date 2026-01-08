@@ -1,6 +1,7 @@
 import app from "@/app";
 import { connectDatabase } from "@/config/db";
 import { env } from "@/config/env";
+import { startReminderCron } from "@/jobs/reminderCron";
 
 const PORT = env.PORT || 3000;
 
@@ -9,6 +10,8 @@ const startServer = async () => {
     // Connect to MongoDB
     await connectDatabase();
 
+    // Start reminder cron job
+    startReminderCron();
     // Start the server
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
