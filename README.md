@@ -387,3 +387,4 @@ NotesApp Development Team
 
 For more information or support, please open an issue on the repository.
 
+
