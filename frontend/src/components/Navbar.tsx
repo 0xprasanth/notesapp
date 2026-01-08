@@ -23,10 +23,10 @@ export function Navbar() {
     <nav className="border-b bg-white">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center space-x-6">
-          <Link href="/dashboard" className="text-xl font-bold text-primary">
+          <Link href="/dashboard" className="text-primary text-xl font-bold">
             NotesApp
           </Link>
-          <div className="hidden space-x-4 md:flex">
+          {/* <div className="hidden space-x-4 md:flex">
             <Link
               href="/dashboard"
               className="text-sm font-medium text-gray-700 hover:text-primary"
@@ -39,13 +39,11 @@ export function Navbar() {
             >
               New Task
             </Link>
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center space-x-4">
           {isAuthenticated && (
-            <span className="text-sm text-gray-700">
-              {user.name}
-            </span>
+            <span className="text-sm text-gray-700">{user.name}</span>
           )}
           {isAuthenticated && (
             <Button variant="outline" onClick={handleLogout}>
@@ -57,5 +55,3 @@ export function Navbar() {
     </nav>
   );
 }
-
-
