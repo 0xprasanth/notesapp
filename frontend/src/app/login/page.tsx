@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { login } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -16,72 +23,57 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
   const { setAuth } = useAuthStore();
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
-    
+
     if (!email) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = "Invalid email format";
     }
-    
+
     if (!password) {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) {
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      const authResponse = await login(email, password);
+      // set auth in store + persist
+      setAuth(
+        authResponse.token,
+        authResponse.user.id,
+        authResponse.user.name,
+        authResponse.user.email,
+      );
 
-      if (result?.error) {
-        toast.error("Invalid email or password");
-        return;
-      }
-
-      if (result?.ok) {
-        // Get session to sync with Zustand
-        const response = await fetch("/api/auth/session");
-        const session = await response.json();
-        
-        if (session?.user) {
-          setAuth(
-            {
-              id: session.user.id,
-              name: session.user.name ?? "",
-              email: session.user.email ?? "",
-            },
-            session.user.token
-          );
-        }
-
-        toast.success("Signed in successfully");
-        router.push("/dashboard");
-        router.refresh();
-      }
-    } catch (error) {
+      toast.success("Signed in successfully");
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error: any) {
       console.error("Sign in error:", error);
-      toast.error("An error occurred. Please try again.");
+      const message =
+        error?.response?.data?.message || "Invalid email or password";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -129,18 +121,14 @@ export default function SignInPage() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 mt-4">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+          <CardFooter className="mt-4 flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
             <p className="text-center text-sm text-gray-600">
               Don't have an account?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
-                Sign up
+              <Link href="/register" className="text-primary hover:underline">
+                Register
               </Link>
             </p>
           </CardFooter>
@@ -149,4 +137,3 @@ export default function SignInPage() {
     </div>
   );
 }
-

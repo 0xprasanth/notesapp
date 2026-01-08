@@ -6,10 +6,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 import { register } from "@/services/auth.service";
-import { signIn } from "next-auth/react";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function SignUpPage() {
@@ -18,72 +24,64 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
   const { setAuth } = useAuthStore();
 
   const validate = () => {
     const newErrors: { name?: string; email?: string; password?: string } = {};
-    
+
     if (!name || name.length < 2) {
       newErrors.name = "Name must be at least 2 characters";
     }
-    
+
     if (!email) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = "Invalid email format";
     }
-    
+
     if (!password) {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) {
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       // Register user
       const authResponse = await register(name, email, password);
-      console.log(
-        authResponse
-      )
-      // Auto sign in after registration
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
 
-      if (result?.ok) {
-        setAuth(
-          authResponse.user.id,
-          authResponse.user.name,
-          authResponse.user.email,
-          authResponse.token
-        );
+      // Auto sign in / set auth after registration
+      setAuth(
+        authResponse.token,
+        authResponse.user.id,
+        authResponse.user.name,
+        authResponse.user.email,
+      );
 
-        toast.success("Account created successfully!");
-        router.push("/dashboard");
-        router.refresh();
-      } else {
-        toast.error("Registration successful, but sign in failed. Please try signing in.");
-        router.push("/login");
-      }
+      toast.success("Account created successfully!");
+      router.push("/dashboard");
+      router.refresh();
     } catch (error: any) {
       console.error("Sign up error:", error);
-      const message = error.response?.data?.message || "An error occurred. Please try again.";
+      const message =
+        error.response?.data?.message || "An error occurred. Please try again.";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -147,12 +145,8 @@ export default function SignUpPage() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 mt-2">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+          <CardFooter className="mt-2 flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
             <p className="text-center text-sm text-gray-600">
@@ -167,4 +161,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
