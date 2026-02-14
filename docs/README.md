@@ -59,7 +59,7 @@ notesapp/
 
 ---
 
-# Frontend
+# 🎨 Frontend
 
 ### Tech Stack
 
@@ -94,7 +94,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
 ---
 
-# Backend – Task Management API
+# ⚙️ Backend – Task Management API
 
 A robust task management backend built with Node.js, Express, TypeScript, and MongoDB.
 
@@ -110,22 +110,105 @@ A robust task management backend built with Node.js, Express, TypeScript, and Mo
 * Modular Architecture
 * Production-ready structure
 
+---
+
+## 🛠 Backend Tech Stack
+
+* Node.js
+* Express.js 5.x
+* TypeScript
+* MongoDB + Mongoose
+* JWT
+* bcryptjs
+* Nodemailer
+* node-cron
+* Helmet.js
+* express-validator
+* Zod
+* Morgan
+* pnpm
+
+---
+
+## 📁 Backend Project Structure
+
+```
+backend/src/
+│
+├── api/
+│   ├── auth/
+│   ├── tasks/
+│   └── reminder/
+│
+├── config/
+├── jobs/
+├── middlewares/
+├── models/
+├── utils/
+│
+├── routes.ts
+├── app.ts
+└── server.ts
+```
+
+---
 
 # 🔧 Backend Setup
 
-Refer backend docs [README.md](./backend/README.md)
+## 1️⃣ Install Dependencies
+
+```bash
+cd backend
+pnpm install
+```
+
+## 2️⃣ Environment Variables
+
+Create:
+
+* `.env.development`
+* `.env.production`
+
+Example:
+
+```env
+NODE_ENV=development
+PORT=3001
+MONGODB_URI=mongodb://localhost:27017/notesapp_platform
+
+JWT_SECRET=your-super-secret-jwt-key
+JWT_SECRET_EXPIRATION=1h
+
+CORS_PATH=http://localhost:3000
+
+REMINDER_HOURS_BEFORE=24
+
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+EMAIL_FROM=noreply@notesapp.com
+
+FRONTEND_URL=http://localhost:3000
+```
+
+## 4️⃣ Run Backend
+
+Development:
+
+```bash
+pnpm dev
+```
+
+Production:
+
+```bash
+pnpm build
+pnpm start:prod
+```
 
 
-# 🛡 Security Features
-
-* bcrypt password hashing
-* JWT authentication
-* Helmet security headers
-* CORS configuration
-* Input validation
-* Structured error responses
-
-# Reminder System Flow
+# 📧 Reminder System Flow
 
 ```mermaid
 flowchart LR
@@ -139,20 +222,19 @@ flowchart LR
     --> G([END])
 
 ```
+
+
 ---
 
-# ScreenShots
-## Landing Page
-<p align="center"> <img src="docs/image/landing.png" alt="Landing Page" width="900"/> </p>
+# 🛡 Security Features
 
-## Authentication
-<p align="center"> <img src="./docs/image/signup.png" alt="Authentication Page" width="900"/> </p>
+* bcrypt password hashing
+* JWT authentication
+* Helmet security headers
+* CORS configuration
+* Input validation
+* Structured error responses
 
-## Task Dashboard
-<p align="center"> <img src="docs/image/dashboard.png" alt="Task Dashboard" width="900"/> </p>
+---
 
-## Create / Edit Task
-<p align="center"> <img src="docs/image/create-task.png" alt="Create Task Form" width="900"/> </p>
-
-# License
-This repository is licensed under [MIT](./LICENSE)
+# 📄 License
