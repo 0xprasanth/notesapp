@@ -71,8 +71,7 @@ export default function SignInPage() {
       router.refresh();
     } catch (error: any) {
       console.error("Sign in error:", error);
-      const message =
-        error?.response?.data?.message || "Invalid email or password";
+      const message = error?.message || "Invalid email or password";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -125,12 +124,14 @@ export default function SignInPage() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
-            <p className="text-center text-sm text-gray-600">
+            <div className="text-sm text-gray-600">
+              {" "}
               Don't have an account?{" "}
               <Link href="/register" className="text-primary hover:underline">
                 Register
               </Link>
-            </p>
+              <Button>Help</Button>
+            </div>
           </CardFooter>
         </form>
       </Card>

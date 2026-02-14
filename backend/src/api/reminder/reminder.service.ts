@@ -1,7 +1,7 @@
-import Reminder, { ReminderStatus } from '@/models/Reminder';
-import Task from '@/models/Task';
-import User from '@/models/User';
-import emailService from '@/utils/emailService';
+import Reminder, { ReminderStatus } from "@/models/Reminder";
+import Task from "@/models/Task";
+import User from "@/models/User";
+import emailService from "@/utils/emailService";
 
 class ReminderService {
   async processPendingReminders(): Promise<void> {
@@ -11,12 +11,14 @@ class ReminderService {
       // Find all pending reminders that are due
       const pendingReminders = await Reminder.find({
         status: ReminderStatus.PENDING,
-        scheduledAt: { $lte: now }
+        scheduledAt: { $lte: now },
       })
-        .populate('taskId')
-        .populate('userId');
+        .populate("taskId")
+        .populate("userId");
 
-      console.log(`Found ${pendingReminders.length} pending reminders to process`);
+      console.log(
+        `Found ${pendingReminders.length} pending reminders to process`
+      );
 
       for (const reminder of pendingReminders) {
         try {
@@ -24,7 +26,7 @@ class ReminderService {
           if (!reminder.taskId || !reminder.userId) {
             await this.markReminderFailed(
               reminder._id.toString(),
-              'Task or user not found'
+              "Task or user not found"
             );
             continue;
           }
@@ -51,33 +53,36 @@ class ReminderService {
             // Mark reminder as sent
             await Reminder.findByIdAndUpdate(reminder._id, {
               status: ReminderStatus.SENT,
-              sentAt: new Date()
+              sentAt: new Date(),
             });
             console.log(`Reminder sent successfully for task: ${task.title}`);
           } else {
             // Mark as failed
             await this.markReminderFailed(
               reminder._id.toString(),
-              'Failed to send email'
+              "Failed to send email"
             );
           }
         } catch (error) {
           console.error(`Error processing reminder ${reminder._id}:`, error);
           await this.markReminderFailed(
             reminder._id.toString(),
-            error instanceof Error ? error.message : 'Unknown error'
+            error instanceof Error ? error.message : "Unknown error"
           );
         }
       }
     } catch (error) {
-      console.error('Error in processPendingReminders:', error);
+      console.error("Error in processPendingReminders:", error);
     }
   }
 
-  private async markReminderFailed(reminderId: string, errorMessage: string): Promise<void> {
+  private async markReminderFailed(
+    reminderId: string,
+    errorMessage: string
+  ): Promise<void> {
     await Reminder.findByIdAndUpdate(reminderId, {
       status: ReminderStatus.FAILED,
-      errorMessage
+      errorMessage,
     });
   }
 
@@ -86,10 +91,10 @@ class ReminderService {
       { $match: { userId: userId } },
       {
         $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     return stats.reduce((acc, item) => {
